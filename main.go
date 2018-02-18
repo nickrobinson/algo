@@ -2,55 +2,42 @@ package main
 
 import (
 	"fmt"
-	"github.com/nickrobinson/algo/graph"
-	"github.com/nickrobinson/algo/pq"
+	"gonum.org/v1/gonum/graph/simple"
+	"github.com/nickrobinson/algo/graph/mst"
+	"math"
+	"strconv"
 )
 
-var g = graph.New(graph.Undirected)
-
-func kruskals() {
-	queue := pq.New()
-
-	fetchedEdges := g.FetchEdges()
-	for _, element := range fetchedEdges {
-		fmt.Println(element.Weight)
-		queue.Insert(element, float64(element.Weight))
+func main() {
+	nodes := [14]struct{ srcID, targetID, weight int }{
+		{0, 1, 4},
+		{0, 7, 8},
+		{1, 7, 11},
+		{1, 2, 8},
+		{7, 8, 7},
+		{7, 6, 1},
+		{8, 2, 2},
+		{8, 6, 6},
+		{2, 3, 7},
+		{6, 5, 2},
+		{2, 5, 4},
+		{3, 4, 9},
+		{3, 5, 14},
+		{5, 4, 10},
 	}
 
-	minEdge, _ := queue.Pop()
-	fmt.Println(minEdge.(graph.edge))
-	//fmt.Println("Smallest Edge: ", minEdge.Weight)
-}
+	g := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 
-func main() {
-	fmt.Println("Hello World")
-	
-	nodes := make(map[rune]graph.Node, 0)
+	for _, n := range nodes {
+		g.SetWeightedEdge(simple.WeightedEdge{F: simple.Node(n.srcID), T: simple.Node(n.targetID), W: float64(n.weight)})
+	}
 
-	nodes['a'] = g.MakeNode()
-	nodes['b'] = g.MakeNode()
-	nodes['c'] = g.MakeNode()
-	nodes['d'] = g.MakeNode()
-	nodes['e'] = g.MakeNode()
-	nodes['f'] = g.MakeNode()
-	nodes['g'] = g.MakeNode()
-	nodes['h'] = g.MakeNode()
-	nodes['i'] = g.MakeNode()
+	for _, e := range g.Edges() {
+		weight, _ := g.Weight(e.From(), e.To())
+		fmt.Println("From: " + strconv.Itoa(int(e.From().ID())) + 
+			" To: " + strconv.Itoa(int(e.To().ID())) +
+			" Weight: " + strconv.FormatFloat(weight, 'E', 0, 64))
+	}
 
-	g.MakeEdgeWeight(nodes['a'], nodes['b'], 4)
-	g.MakeEdgeWeight(nodes['a'], nodes['h'], 8)
-	g.MakeEdgeWeight(nodes['b'], nodes['c'], 8)
-	g.MakeEdgeWeight(nodes['b'], nodes['h'], 11)
-	g.MakeEdgeWeight(nodes['c'], nodes['d'], 7)
-	g.MakeEdgeWeight(nodes['c'], nodes['f'], 4)
-	g.MakeEdgeWeight(nodes['c'], nodes['i'], 2)
-	g.MakeEdgeWeight(nodes['d'], nodes['e'], 9)
-	g.MakeEdgeWeight(nodes['d'], nodes['f'], 14)
-	g.MakeEdgeWeight(nodes['e'], nodes['f'], 10)
-	g.MakeEdgeWeight(nodes['f'], nodes['g'], 2)
-	g.MakeEdgeWeight(nodes['g'], nodes['h'], 1)
-	g.MakeEdgeWeight(nodes['g'], nodes['i'], 6)
-	g.MakeEdgeWeight(nodes['h'], nodes['i'], 7)
-
-	kruskals()
+	mst.Kruskals(g)
 }
