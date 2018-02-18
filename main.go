@@ -32,12 +32,12 @@ func main() {
 		g.SetWeightedEdge(simple.WeightedEdge{F: simple.Node(n.srcID), T: simple.Node(n.targetID), W: float64(n.weight)})
 	}
 
-	for _, e := range g.Edges() {
-		weight, _ := g.Weight(e.From(), e.To())
+	mst := mst.Kruskals(g)
+	
+	for _, e := range mst.Edges() {
+		weight, _ := mst.Weight(e.From(), e.To())
 		fmt.Println("From: " + strconv.Itoa(int(e.From().ID())) + 
 			" To: " + strconv.Itoa(int(e.To().ID())) +
 			" Weight: " + strconv.FormatFloat(weight, 'E', 0, 64))
 	}
-
-	mst.Kruskals(g)
 }
