@@ -2,11 +2,11 @@ package mst
 
 import (
 	"fmt"
+	"math"
+
+	"github.com/nickrobinson/algo/pq"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
-	"github.com/nickrobinson/algo/pq"
-	"math"
-	"strconv"
 )
 
 var nodeMap = map[int]string{
@@ -21,13 +21,15 @@ var nodeMap = map[int]string{
 	8: "i",
 }
 
-func Kruskals(g *simple.WeightedUndirectedGraph) (*simple.WeightedUndirectedGraph) {
-	set := make(map[int64]int64)
+// Kruskals Algorithm Implementation
+func Kruskals(g *simple.WeightedUndirectedGraph) *simple.WeightedUndirectedGraph {
+	ds := newDisjointSet()
+
 	queue := pq.New()
 	mst := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 
 	for _, n := range g.Nodes() {
-		set[n.ID()] = -1
+		ds.makeSet(n.ID())
 	}
 
 	for _, e := range g.Edges() {
@@ -39,38 +41,22 @@ func Kruskals(g *simple.WeightedUndirectedGraph) (*simple.WeightedUndirectedGrap
 		edge, _ := queue.Pop()
 		test := edge.(graph.Edge)
 
-		if(set[test.From().ID()] == -1 && set[test.To().ID()] == -1) {
-			set[test.From().ID()] = test.From().ID()
-		}
+		// If two elements are part of different sets then it is ok to join
+		if ds.find(test.From().ID()) != ds.find(test.To().ID()) {
+			ds.union(ds.find(test.From().ID()), ds.find(test.To().ID()))
 
-		if(set[test.From().ID()] != set[test.To().ID()]) {
-			fmt.Println(nodeMap[int(test.From().ID())] + ":" + strconv.Itoa(int(set[test.From().ID()])) + " " + nodeMap[int(test.To().ID())] + ":" + strconv.Itoa(int(set[test.To().ID()])))
-
-			if(set[test.From().ID()] == -1 && set[test.To().ID()] > 1) {
-				set[test.From().ID()] = set[test.To().ID()]
-			} else if(set[test.To().ID()] == -1 && set[test.From().ID()] > 1) {
-				set[test.To().ID()] = set[test.From().ID()]
-			} else {
-				if(set[test.To().ID()] > set[test.From().ID()]) {
-					set[test.From().ID()] = set[test.To().ID()]
-				} else {
-					set[test.To().ID()] = set[test.From().ID()]
-				}
-			}
-
-			fmt.Println(nodeMap[int(test.From().ID())] + ":" + strconv.Itoa(int(set[test.From().ID()])) + " " + nodeMap[int(test.To().ID())] + ":" + strconv.Itoa(int(set[test.To().ID()])))
 			fmt.Println("Adding Edge: " + nodeMap[int(test.From().ID())] + "->" + nodeMap[int(test.To().ID())])
-			
+
 			weight, _ := g.Weight(test.From(), test.To())
+
 			mst.SetWeightedEdge(simple.WeightedEdge{
-				F: simple.Node(test.From().ID()), 
-				T: simple.Node(test.To().ID()), 
+				F: simple.Node(test.From().ID()),
+				T: simple.Node(test.To().ID()),
 				W: weight})
 		} else {
-			fmt.Println("Not Adding Edge: " + strconv.Itoa(int(test.From().ID())) + "->" + strconv.Itoa(int(test.To().ID())))
+			fmt.Println("Not Adding Edge: " + nodeMap[int(test.From().ID())] + "->" + nodeMap[int(test.To().ID())])
 		}
 	}
 
 	return mst
 }
-
